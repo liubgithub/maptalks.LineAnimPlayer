@@ -1,5 +1,5 @@
 # maptalks.markercluster
 
-[![CircleCI](https://circleci.com/gh/maptalks/maptalks.markercluster.svg?style=shield)](https://circleci.com/gh/MapTalks/maptalks.markercluster)
+[![CircleCI](https://circleci.com/gh/maptalks/maptalks.LineAnimPlayer.svg?style=shield)](https://circleci.com/gh/MapTalks/maptalks.LineAnimPlayer)
 
-A layer of maptalks to cluster markers.
+A line can show in an animated way by this plugin which is based on maptalks.
