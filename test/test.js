@@ -17,7 +17,7 @@ describe('LineAnimPlayer', function () {
 
     it('should show', function (done) {
         var layer = new maptalks.VectorLayer('v');
-        var lineAnimPlayer = new maptalks.LineAnimPlayer([map.getCenter(), map.getCenter().add(0.01, 0.01)]).addTo(layer);
+        //var lineAnimPlayer = new maptalks.LineAnimPlayer([map.getCenter(), map.getCenter().add(0.01, 0.01)]).addTo(layer);
         layer.once('layerload', function () {
             expect(layer).not.to.be.painted();
             layer.once('layerload', function () {

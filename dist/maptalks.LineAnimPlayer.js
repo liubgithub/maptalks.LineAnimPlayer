@@ -67,12 +67,12 @@ var LineAnimPlayer = function (_maptalks$LineString) {
             options = {};
             cb = options;
         }
-        var coordinates = this.getCoordinates();
-        this.totalCoordinates = coordinates;
+        //const coordinates = this.getCoordinates();
+        this.totalCoordinates = this.getCoordinates();
         var duration = options['duration'] || 1000;
         this.duration = duration;
-        var length = this.getLength();
-        this.totalLength = length;
+        //const length = this.getLength();
+        this.totalLength = this.getLength();
         var easing = options['easing'] || 'out';
         this.unitTime = options['unitTime'] || 1;
         this.aniCallback = cb;
@@ -117,7 +117,7 @@ var LineAnimPlayer = function (_maptalks$LineString) {
     LineAnimPlayer.prototype._resetPlayer = function _resetPlayer() {
         var playing = this.player && this.player.playState === 'running';
         if (playing) {
-            this.player.finish();
+            this.player.pause();
         }
         this._createPlayer();
         if (playing) {
@@ -127,6 +127,7 @@ var LineAnimPlayer = function (_maptalks$LineString) {
 
     LineAnimPlayer.prototype._createPlayer = function _createPlayer() {
         var duration = (this.duration - this.played) / this.unitTime;
+        //this.player.pause();
         this.player = maptalks.animation.Animation.animate({ 't': [this.played / this.duration, 1] }, { 'speed': duration, 'easing': 'linear' }, function (frame) {
             this._step(frame);
         }.bind(this));
@@ -134,11 +135,11 @@ var LineAnimPlayer = function (_maptalks$LineString) {
 
     LineAnimPlayer.prototype.cancel = function cancel() {
         if (this.player) {
-            this.player.cancel();
             this.played = 0;
-            if (this._animIdx > 0) this._animIdx = 0;
-            if (this._animLenSoFar > 0) this._animLenSoFar = 0;
+            this._animIdx = 0;
+            this._animLenSoFar = 0;
             this._createPlayer();
+            this.player.cancel();
             this._step({ 'styles': { 't': 0 } });
             this.fire('playcancel');
             return this;
@@ -165,7 +166,7 @@ var LineAnimPlayer = function (_maptalks$LineString) {
 
     LineAnimPlayer.prototype.finish = function finish() {
         this.player.finish();
-        this._step({ 'styles': { 't': 1 } });
+        //this._step({ 'styles': { 't': 1 }});
         this.fire('playfinish');
         return this;
     };
@@ -209,9 +210,7 @@ var LineAnimPlayer = function (_maptalks$LineString) {
             targetCoord = new maptalks.Coordinate(x, y);
         var animCoords = coordinates.slice(0, this._animIdx + 1);
         animCoords.push(targetCoord);
-
         this.setCoordinates(animCoords);
-
         return animCoords;
     };
 

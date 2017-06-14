@@ -39,12 +39,12 @@ export class LineAnimPlayer extends maptalks.LineString {
             options = {};
             cb = options;
         }
-        const coordinates = this.getCoordinates();
-        this.totalCoordinates = coordinates;
+        //const coordinates = this.getCoordinates();
+        this.totalCoordinates = this.getCoordinates();
         const duration = options['duration'] || 1000;
         this.duration = duration;
-        const length = this.getLength();
-        this.totalLength = length;
+        //const length = this.getLength();
+        this.totalLength = this.getLength();
         const easing = options['easing'] || 'out';
         this.unitTime = options['unitTime'] || 1;
         this.aniCallback = cb;
@@ -89,7 +89,7 @@ export class LineAnimPlayer extends maptalks.LineString {
     _resetPlayer() {
         var playing = this.player && this.player.playState === 'running';
         if (playing) {
-            this.player.finish();
+            this.player.pause();
         }
         this._createPlayer();
         if (playing) {
@@ -99,6 +99,7 @@ export class LineAnimPlayer extends maptalks.LineString {
 
     _createPlayer() {
         var duration = (this.duration - this.played) / this.unitTime;
+        this.player.pause();
         this.player = maptalks.animation.Animation.animate({ 't': [this.played / this.duration, 1] },
             { 'speed': duration, 'easing': 'linear' },
            function (frame) {
@@ -108,14 +109,12 @@ export class LineAnimPlayer extends maptalks.LineString {
 
     cancel() {
         if (this.player) {
-            this.player.cancel();
             this.played = 0;
-            if (this._animIdx > 0)
-                this._animIdx = 0;
-            if (this._animLenSoFar > 0)
-                this._animLenSoFar = 0;
+            this._animIdx = 0;
+            this._animLenSoFar = 0;
+            //为什么要重新生成player，是因为在加速减速时候，player变了，t:[start,end]中的start变了,如果直接cancel
             this._createPlayer();
-            this._step({ 'styles': { 't': 0 }});
+            this.player.cancel();
             this.fire('playcancel');
             return this;
         }
@@ -141,7 +140,7 @@ export class LineAnimPlayer extends maptalks.LineString {
 
     finish() {
         this.player.finish();
-        this._step({ 'styles': { 't': 1 }});
+        //this._step({ 'styles': { 't': 1 }});
         this.fire('playfinish');
         return this;
     }
@@ -185,9 +184,7 @@ export class LineAnimPlayer extends maptalks.LineString {
             targetCoord = new maptalks.Coordinate(x, y);
         var animCoords = coordinates.slice(0, this._animIdx + 1);
         animCoords.push(targetCoord);
-
         this.setCoordinates(animCoords);
-
         return animCoords;
     }
 }

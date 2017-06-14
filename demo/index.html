@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <meta charset="utf-8" />
+    <link href="player.css" rel="stylesheet" />
+    <style type="text/css">
+        html, body {
+            margin: 0px;
+            background-color: black;
+            height: 100%;
+            width: 100%;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        #infolabel{
+            width:200px;
+            height:70px;
+            padding:2px;
+            background-color:#fefb99;
+            border:solid 1px black;
+        }
+        p{margin-top:0}
+    </style>
+    <script src="../node_modules/maptalks/dist/maptalks.js"></script>
+    <script src="../dist/maptalks.LineAnimPlayer.js"></script>
+    <script src="math.js"></script>
+    <script type="text/javascript">
+        var mapBD;
+        var linePlayer;
+        var line1;
+        var line2;
+        var layer;
+        var path1 = [
+            [114.339258, 30.53958],
+            [114.338207, 30.539992],
+            [114.338099, 30.540179],
+            [114.338009, 30.540443],
+            [114.338058, 30.540898],
+            [114.339446, 30.543499]
+        ];
+        var path2 = [
+         [114.333186, 30.536472],
+         [114.333311, 30.536795],
+         [114.33169,30.536938],
+         [114.331479,30.537001],
+         [114.331479,30.537479],
+         [114.331753,30.539792],
+         [114.331991,30.540422],
+         [114.333226,30.542265],
+         [114.335741,30.541025],
+         [114.337057,30.540375],
+         [114.33765,30.540123],
+         [114.339555, 30.543723]
+        ];
+        var path3 = [
+        [114.333186, 30.536472],
+        [114.333311, 30.536795],
+        [114.333769,30.536717],
+        [114.335768,30.536608],
+        [114.336401,30.536573],
+        [114.337632,30.536437],
+        [114.338382,30.536301],
+        [114.340197,30.535865],
+        [114.340803,30.537805],
+        [114.341118,30.538816],
+        [114.338225,30.539998],
+        [114.338099,30.540154],
+        [114.337996,30.540426],
+        [114.338014,30.540838],
+        [114.339555,30.543723]
+        ];
+        //路障点
+        var constructions = [[114.340031, 30.535935]];
+        function initMap() {
+            mapBD = new maptalks.Map('map', {
+                center: [114.33549, 30.539983],
+                zoom: 17,
+                minZoom: 1,
+                maxZoom: 19,
+                view: {
+                    projection: 'baidu'
+                },
+                baseLayer: new maptalks.TileLayer('base', {
+                    urlTemplate: 'http://api{s}.map.bdimg.com/customimage/tile?&x={x}&y={y}&z={z}&udt=20161109&scale=1&styles=t%3Awater%7Ce%3Aall%7Cc%3A%23044161%2Ct%3Aland%7Ce%3Aall%7Cc%3A%23091934%2Ct%3Aboundary%7Ce%3Ag%7Cc%3A%23064f85%2Ct%3Arailway%7Ce%3Aall%7Cv%3Aoff%2Ct%3Ahighway%7Ce%3Ag%7Cc%3A%23004981%2Ct%3Ahighway%7Ce%3Ag.f%7Cc%3A%23005b96%7Cl%3A1%2Ct%3Ahighway%7Ce%3Al%7Cv%3Aon%2Ct%3Aarterial%7Ce%3Ag%7Cc%3A%23004981%7Cl%3A-39%2Ct%3Aarterial%7Ce%3Ag.f%7Cc%3A%2300508b%2Ct%3Agreen%7Ce%3Aall%7Cv%3Aoff%7Cc%3A%23056197%2Ct%3Asubway%7Ce%3Aall%7Cv%3Aoff%2Ct%3Amanmade%7Ce%3Aall%7Cv%3Aoff%2Ct%3Alocal%7Ce%3Aall%7Cv%3Aoff%2Ct%3Aarterial%7Ce%3Al%7Cv%3Aon%2Ct%3Aboundary%7Ce%3Ag.f%7Cc%3A%23029fd4%2Ct%3Abuilding%7Ce%3Aall%7Cc%3A%231a5787%2Ct%3Apoi%7Ce%3Aall%7Cv%3Aoff%2Ct%3Aall%7Ce%3Al.t.f%7Cc%3A%23e3dad9%2Ct%3Aall%7Ce%3Al.t.s%7Cc%3A%23000000',
+                    subdomains: [2]
+                })
+            });
+        }
+        function addConstructions(layer) {
+            for (var i = 0; i < constructions.length; i++) {
+                var construction = new maptalks.Marker(constructions[i], {
+                    symbol: {
+                        markerFile: 'images/roadworks.png',
+                        markerWidth: 39,
+                        markerHeight: 36
+                    }
+                }).addTo(layer);
+            }
+        }
+
+        //给各个操作按钮绑定点击事件
+        function trackEvent() {
+            //播放
+            document.getElementById('playBtn').onclick = function () {
+                line2.play();
+            }
+            //暂停
+            document.getElementById('pauseBtn').onclick = function () {
+                line2.pause();
+            }
+            //重新开始
+            document.getElementById('stopBtn').onclick = function () {
+                line2.cancel();
+                //line2.setCoordinates([]);
+                ////alert(line2.getCoordinates().length);
+                //var geos = layer.getGeometries();
+                //console.log(geos.length);
+            }
+            //加速
+            document.getElementById('forwardBtn').onclick = function () {
+                  var t = 3;
+                  line2.setSpeed(t);
+            }
+            //减速
+            document.getElementById('rewindBtn').onclick = function () {
+                var t = 0.5;
+                line2.setSpeed(t);
+            }
+            //回放
+            document.getElementById('ejectBtn').onclick = function () {
+                line2.cancel();
+                line2.play();
+            }
+        }
+        //设置标签中显示的内容
+        function setInfoContent(date, distance) {
+            distance = math.disposeNumber(distance, 4);
+            var html = '<div id="infolabel"><p>当前时间:' + date + '</p>' +
+                            '<p>经过:' + distance + '米</p></div>';
+            return html;            
+        }
+        window.onload=function () {
+            initMap();
+            layer = new maptalks.VectorLayer('vector');
+
+            mapBD.addLayer(layer);
+            var roadInfo = new maptalks.TileLayer('roadInfo', {
+                urlTemplate: 'http://its.map.baidu.com:8002/traffic/TrafficTileService?time=1481507583842&label=web2D&v=016&level={z}&x={x}&y={y}',
+                subdomains: []
+            });
+            //无路障时最佳路径
+            line1 = new maptalks.LineString(path3, {
+                symbol: {
+                    'lineWidth': 10,
+                    'lineColor': 'rgba(36,138,74,1)',
+                    'lineOpacity': 0.6,
+                    'lineDasharray': [20, 20],
+                    'lineCap': 'round'
+                }
+            }).addTo(layer);
+
+
+         var sprite = null;
+         var infoLabel = null;
+         //消防队的轨迹动画效果
+         line2 = new maptalks.LineAnimPlayer(path2, {
+             symbol: [{
+                 'lineWidth': 10,
+                 'lineColor': 'rgba(36,138,74,1)',
+                 'lineCap': 'round'
+             }, {
+                 'lineWidth': 10,
+                 'linePatternFile': 'images/arrow.png',
+                 'lineCap': 'round'
+             }]
+         }).addTo(layer).createPlayer({
+             duration: 15000,
+             easing: 'linear'
+         }, function (frm, coord) {
+             sprite = !sprite ? new maptalks.Marker(coord, {
+                 symbol: {
+                     'markerFile': 'images/icon-xf-1.png',
+                     'markerDx': 45,
+                     'markerDy': 30
+                 }
+             }).addTo(layer) : sprite.setCoordinates(coord);
+             if (!infoLabel)
+                 infoLabel = new maptalks.ui.UIMarker(coord, {
+                     animation: false,
+                     dy: -80
+                 }).addTo(mapBD);
+             //距离
+             var distance = line2.getLength() * frm.styles.t;
+             //当前时间
+             var date = new Date().toLocaleString();
+             var content = setInfoContent(date, distance);
+             infoLabel.setContent(content);
+             infoLabel.setCoordinates(coord);
+             infoLabel.show();
+             //mapBD.setCenter(coord);
+         });
+         line2.on("playfinish", function () {
+             //alert("运动轨迹结束!");
+         });
+         line2.on('click', function (e) {
+             e.target.flash();
+             var coords = e.target.getCoordinates();
+         });
+         var xfd = new maptalks.Marker([114.333186, 30.536472], {
+                symbol:{
+                    markerFile: 'images/icon-xf-1.png',
+                    markerDx:45,
+                    markerDy:30
+                }
+            }).addTo(layer);
+            var end = new maptalks.Marker([114.339519, 30.543672], {
+                symbol: {
+                    markerFile: 'images/end.png',
+                    markerDx: 5,
+                    markerDy: -3
+                }
+            }).addTo(layer);
+            
+            //添加施工点
+            addConstructions(layer);
+            trackEvent();
+        }
+    </script>
+</head>
+<body>
+    <div style="width:100%;z-index:9999;position:absolute;bottom:0px;opacity:0.6;">
+        <section class="playContainer">
+            <li class="playBtn" id="playBtn">
+                <a href="#" title="start">Start</a>
+            </li>
+            <li class="pauseBtn" id="pauseBtn">
+                <a href="#" title="pause">Pause</a>
+            </li>
+            <li class="stopBtn" id="stopBtn">
+                <a href="#" title="stop">Stop</a>
+            </li>
+            <li class="forwardBtn playBtn" id="forwardBtn">
+                <a href="#" title="forward">Forward</a>
+                <a href="#" title="forward">Forward</a>
+            </li>
+            <li class="rewindBtn" id="rewindBtn">
+                <a href="#" title="rewind">Rewind</a>
+                <a href="#" title="rewind">Rewind</a>
+            </li>
+            <li class="ejectBtn" id="ejectBtn">
+                <a href="#" class="arrow">Eject</a>
+                <a href="#" class="dash">Eject</a>
+            </li>
+        </section>
+    </div>
+    <div id="map"></div>
+</body>
+</html>
