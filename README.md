@@ -16,4 +16,4 @@
              *// TO DO*
          *});*
          //I have edit the readme file.
-    3.need fix, maptalks's version update
+    3.Need fix, maptalks's version update,set some parameter
